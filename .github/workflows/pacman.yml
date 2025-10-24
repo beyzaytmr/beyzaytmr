@@ -2,7 +2,7 @@ name: generate pacman contribution
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */6 * * *"   # 6 saatte bir
   workflow_dispatch:
   push:
     branches:
@@ -13,12 +13,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
+      # (Opsiyonel ama güvenli) dist klasörünü hazırla
+      - name: Prepare dist folder
+        run: mkdir -p dist
+
+      # Pacman SVG üretimi
       - name: Generate pacman-contribution-graph.svg
         uses: abozanona/pacman-contribution-graph@main
+        env:
+          # 🔧 OOM çözümü: Node.js heap'ini büyüt
+          # 6144 genelde yeter. Yetmezse 8192 deneyebilirsin.
+          NODE_OPTIONS: --max-old-space-size=6144
         with:
           github_user_name: ${{ github.repository_owner }}
 
+      # Üretilen dosyaları output-pacman branch’ine pushla
       - name: Push pacman files to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
